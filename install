@@ -5,8 +5,7 @@ PACKAGES=(cmake git libraspberrypi-dev xserver-xorg-input-evdev)
 apt install -y "${PACKAGES[@]}"
 
 # Install DeviceTree's
-cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/
-cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/tft35a.dtbo
+cp bin/tft35a-overlay.dtb /boot/firmware/overlays/tft35a.dtbo
 
 # Firmware config
 tee -a /boot/firmware/config.txt <<EOF
@@ -14,22 +13,12 @@ hdmi_force_hotplug=1
 dtparam=i2c_arm=on
 dtparam=spi=on
 enable_uart=1
-dtoverlay=tft35a:rotate=90
+dtoverlay=tft35a:rotate=__PLACEHOLDER__
 hdmi_group=2
 hdmi_mode=1
 hdmi_mode=87
-hdmi_cvt 480 320 60 6 0 0 0
+hdmi_cvt=__PLACEHOLDER__
 hdmi_drive=2
-EOF
-
-# Touchscreen config
-tee /etc/X11/xorg.conf.d/99-calibration.conf <<EOF
-Section "InputClass"
-        Identifier      "calibration"
-        MatchProduct    "ADS7846 Touchscreen"
-        Option  "Calibration"   "3936 227 268 3880"
-        Option  "SwapAxes"      "1"
-EndSection
 EOF
 
 # Framebuffer copy daemon

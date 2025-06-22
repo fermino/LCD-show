@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VALUE="${1}"
+
+RES_H=320
+RES_V=480
+
+if [[ "${VALUE}" == "90" || "${VALUE}" == "270" ]]; then
+    TMP_VAR="${RES_H}"
+    RES_H="${RES_V}"
+    RES_V="${TMP_VAR}"
+fi
+
+sed -i "s/^dtoverlay=\(.*\):rotate=.*/dtoverlay=\1:rotate=${VALUE}/" /boot/firmware/config.txt
+
+# https://www.raspberrypi.com/documentation/computers/legacy_config_txt.html#raspberry-pi-4-hdmi-pipeline
+# hdmi_cvt=<width> <height> <framerate> <aspect> <margins> <interlace> <rb>
+# 6
+sed -i "s/^hdmi_cvt=.*/hdmi_cvt=${RES_H} ${RES_V} 60 5/" /boot/firmware/config.txt
