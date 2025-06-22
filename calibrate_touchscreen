@@ -2,8 +2,8 @@
 set -euo pipefail
 
 git clone https://github.com/ivan-matveev/xorg_calibrator xorg_calibrator
-apt install -y libxft-dev
-make
-install xorg_calibrator /usr/local/bin/xorg_calibrator
+apt install -y libxft-dev libxi-dev
+make -C xorg_calibrator
+install xorg_calibrator/xorg_calibrator /usr/local/bin/xorg_calibrator
 
 DISPLAY=:0 xorg_calibrator | tee /etc/X11/xorg.conf.d/99-calibration.conf
