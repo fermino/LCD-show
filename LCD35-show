@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-rm -rf /etc/X11/xorg.conf.d/40-libinput.conf
+PACKAGES=(cmake git libraspberrypi-dev xserver-xorg-input-evdev)
+apt install -y "${PACKAGES[@]}"
 
+# Install DeviceTree's
 cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/
 cp ./usr/tft35a-overlay.dtb /boot/firmware/overlays/tft35a.dtbo
 
+# Firmware config
 tee -a /boot/firmware/config.txt <<EOF
 hdmi_force_hotplug=1
 dtparam=i2c_arm=on
@@ -18,6 +22,7 @@ hdmi_cvt 480 320 60 6 0 0 0
 hdmi_drive=2
 EOF
 
+# Touchscreen config
 tee /etc/X11/xorg.conf.d/99-calibration.conf <<EOF
 Section "InputClass"
         Identifier      "calibration"
@@ -27,15 +32,22 @@ Section "InputClass"
 EndSection
 EOF
 
-cp ./usr/inittab /etc/
-
-apt install -y cmake libraspberrypi-dev
+# Framebuffer copy daemon
 git clone https://github.com/tasanakorn/rpi-fbcp rpi-fbcp
 mkdir rpi-fbcp/build
 cmake -B rpi-fbcp/build rpi-fbcp
 make -C rpi-fbcp/build
 install rpi-fbcp/build/fbcp /usr/local/bin/fbcp
-cp -rf ./etc/rc.local /etc/rc.local
+tee /etc/systemd/system/fbcp.service <<EOF
+[Unit]
+Description=fbcp
 
-apt install -y xserver-xorg-input-evdev
-cp -rf /usr/share/X11/xorg.conf.d/10-evdev.conf /usr/share/X11/xorg.conf.d/45-evdev.conf
+[Service]
+ExecStartPre=/usr/bin/sleep 7
+ExecStart=/usr/local/bin/fbcp
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable fbcp.service
