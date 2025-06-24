@@ -21,6 +21,10 @@ hdmi_cvt=__PLACEHOLDER__
 hdmi_drive=2
 EOF
 
+if grep vc4-kms-v3d /boot/firmware/config.txt; then
+    echo 'WARNING: Make sure to disable vc4-kms-v3d overlay in /boot/firmware/config.txt'
+fi
+
 # Framebuffer copy daemon
 git clone https://github.com/tasanakorn/rpi-fbcp rpi-fbcp
 mkdir rpi-fbcp/build
